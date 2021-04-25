@@ -96,10 +96,10 @@ class gui_stuff(tk.Frame):
         return_variable = action
         if(action == "send"):
             if (self.fields["amount_loop"].get("1.0", tk.END) == '\n'):
-                print("You left the loop amount empty we will assume 1")
+                print("[warning] You left the loop amount empty we will assume 1")
 
             if(self.fields["phone_number"].get("1.0", tk.END) == '\n'):
-                print("You left the phone number empty")
+                print("[severe] You left the phone number empty")
             else:
                 sms_loop = threading.Thread(name='threaded_sms_loop', target=self.threaded_sms_loop)
                 sms_loop.start()
@@ -115,10 +115,10 @@ class gui_stuff(tk.Frame):
 
         if(action == "random"):
             if (self.fields["amount_loop"].get("1.0", tk.END) == '\n'):
-                print("You left the loop amount empty we will assume 1")
+                print("[warning] You left the loop amount empty we will assume 1")
 
             if(self.fields["phone_number"].get("1.0", tk.END) == '\n'):
-                print("You left the phone number empty")
+                print("[severe] You left the phone number empty")
             else:
                 sms_loop = threading.Thread(name='threaded_sms_loop', target=self.threaded_sms_random_loop)
                 sms_loop.start()
@@ -132,9 +132,6 @@ class gui_stuff(tk.Frame):
     def create_sms(self, text, phone_number):
         from twilio.rest import Client
 
-        # Your Account Sid and Auth Token from twilio.com/console
-        # and set the environment variables. See http://twil.io/secure
-
         client = Client(account_sid, auth_token)
 
         message = client.messages.create(
@@ -144,7 +141,7 @@ class gui_stuff(tk.Frame):
         )
 
     def get_cat_facts(self):
-        print("Pew....")
+        print("Cat Facts Cannon Ready: Pew....")
         return requests.get(url="https://catfact.ninja/fact").json()["fact"]
 
 root = tk.Tk(className="Cat Facts")
