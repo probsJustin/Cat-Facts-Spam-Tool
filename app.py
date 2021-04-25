@@ -1,10 +1,11 @@
 import requests
 import tkinter as tk
 from functools import partial
-from twilio.rest import Client
 import os
 from api import account_sid, auth_token
 import threading
+import random
+import time
 
 class gui_stuff(tk.Frame):
 
@@ -17,28 +18,35 @@ class gui_stuff(tk.Frame):
         self.pack()
         self.init_ui()
 
-
     def init_ui(self):
         self.buttons["send"] = tk.Button(self, borderwidth=10, command=partial(self.actions, "send"))
-        self.buttons["send"].grid(row=1, column=0, padx=20, pady=20)
+        self.buttons["send"].grid(row=3, column=0, padx=1, pady=1)
         self.buttons["send"]["text"] = "send"
 
         self.buttons["reset"] = tk.Button(self, borderwidth=10, command=partial(self.actions, "reset"))
-        self.buttons["reset"].grid(row=1, column=1, padx=20, pady=20)
+        self.buttons["reset"].grid(row=3, column=1, padx=1, pady=1)
         self.buttons["reset"]["text"] = "reset"
 
-        self.fields["phone_number"] = tk.Text(self, height=2, width=40)
-        self.fields["phone_number"].grid(row=0, column=1, columnspan=3, padx=20, pady=20)
+        self.buttons["random"] = tk.Button(self, borderwidth=10, command=partial(self.actions, "random"))
+        self.buttons["random"].grid(row=3, column=4, padx=1, pady=1)
+        self.buttons["random"]["text"] = "random"
 
-        self.fields["amount_loop"] = tk.Text(self, height=2, width=10)
-        self.fields["amount_loop"].grid(row=3, column=1, padx=20, pady=20)
+        self.buttons["new_window"] = tk.Button(self, borderwidth=10, command=partial(self.actions, "new_window"))
+        self.buttons["new_window"].grid(row=3, column=2, padx=1, pady=1)
+        self.buttons["new_window"]["text"] = "new window"
+
+        self.fields["phone_number"] = tk.Text(self, height=1, width=40)
+        self.fields["phone_number"].grid(row=0, column=1, columnspan=3, padx=1, pady=1, sticky='w')
+
+        self.fields["amount_loop"] = tk.Text(self, height=1, width=10)
+        self.fields["amount_loop"].grid(row=2, column=1, padx=1, pady=1, sticky='w')
 
         self.labels["phone_number"] = tk.Label(self, borderwidth=10)
-        self.labels["phone_number"].grid(row=0, column=0, padx=20, pady=20)
+        self.labels["phone_number"].grid(row=0, column=0, padx=1, pady=1, sticky='w')
         self.labels["phone_number"]["text"] = "Phone Number"
 
-        self.labels["amount_loop"] = tk.Label(self, borderwidth=20)
-        self.labels["amount_loop"].grid(row=3, column=0, padx=20, pady=20)
+        self.labels["amount_loop"] = tk.Label(self, borderwidth=10)
+        self.labels["amount_loop"].grid(row=2, column=0, padx=1, pady=1, sticky='w')
         self.labels["amount_loop"]["text"] = "# of cat facts"
 
     def threaded_sms_loop(self):
@@ -56,6 +64,23 @@ class gui_stuff(tk.Frame):
                     print(e)
 
 
+
+    def threaded_sms_random_loop(self):
+        if (self.fields["amount_loop"].get("1.0", tk.END) == ""):
+            print(type(self.fields["phone_number"].get("1.0", tk.END)))
+            self.create_sms(self.get_cat_facts(), str(self.fields["phone_number"].get("1.0", tk.END)))
+
+        else:
+            counter = int(self.fields["amount_loop"].get("1.0", tk.END))
+            for x in range(0, counter):
+                try:
+                    time.sleep(random.randint(0, 5))
+                    print(type(self.fields["phone_number"].get("1.0", tk.END)))
+                    self.create_sms(self.get_cat_facts(), str(self.fields["phone_number"].get("1.0", tk.END)))
+                except Exception as e:
+                    print(e)
+
+
     def actions(self, action):
         return_variable = action
         counter = 1
@@ -66,6 +91,18 @@ class gui_stuff(tk.Frame):
         if (action == "reset"):
             print(self.get_cat_facts())
 
+        if(action == "new_window"):
+            self.create_new_window()
+
+        if(action == "random"):
+            sms_loop = threading.Thread(name='threaded_sms_loop', target=self.threaded_sms_random_loop)
+            sms_loop.start()
+
+    def create_new_window(self):
+        newWindow = tk.Toplevel(self.master)
+        newWindow.title("New Cat Facts Window")
+        newWindow.geometry('200x200')
+        tk.Label(newWindow, text="This is a new window").pack()
 
     def create_sms(self, text, phone_number):
         from twilio.rest import Client
@@ -81,14 +118,11 @@ class gui_stuff(tk.Frame):
             to = phone_number
         )
 
-
-
     def get_cat_facts(self):
         return requests.get(url="https://catfact.ninja/fact").json()["fact"]
 
-
 root = tk.Tk(className="Cat Facts")
-root.geometry("600x400")
+root.geometry("600x150")
 app = gui_stuff(master=root)
 app.mainloop()
 
