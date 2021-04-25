@@ -8,7 +8,6 @@ import random
 import time
 
 class gui_stuff(tk.Frame):
-
     def __init__(self, master=None):
         super().__init__(master)
         self.buttons = dict()
@@ -36,7 +35,10 @@ class gui_stuff(tk.Frame):
         self.buttons["new_window"]["text"] = "new window"
 
         self.fields["phone_number"] = tk.Text(self, height=1, width=40)
-        self.fields["phone_number"].grid(row=0, column=1, columnspan=3, padx=1, pady=1, sticky='w')
+        self.fields["phone_number"].grid(row=0, column=1, columnspan=4, padx=1, pady=1, sticky='w')
+
+        self.fields["delay"] = tk.Text(self, height=1, width=15)
+        self.fields["delay"].grid(row=2, column=3, columnspan=3, padx=1, pady=1, sticky='w')
 
         self.fields["amount_loop"] = tk.Text(self, height=1, width=10)
         self.fields["amount_loop"].grid(row=2, column=1, padx=1, pady=1, sticky='w')
@@ -49,16 +51,20 @@ class gui_stuff(tk.Frame):
         self.labels["amount_loop"].grid(row=2, column=0, padx=1, pady=1, sticky='w')
         self.labels["amount_loop"]["text"] = "# of cat facts"
 
+        self.labels["delay"] = tk.Label(self, borderwidth=10)
+        self.labels["delay"].grid(row=2, column=2, padx=1, pady=1, sticky='w')
+        self.labels["delay"]["text"] = "Delay(seconds):"
+
     def threaded_sms_loop(self):
         if (self.fields["amount_loop"].get("1.0", tk.END) == ""):
-            print(type(self.fields["phone_number"].get("1.0", tk.END)))
             self.create_sms(self.get_cat_facts(), str(self.fields["phone_number"].get("1.0", tk.END)))
-
         else:
-            counter = int(self.fields["amount_loop"].get("1.0", tk.END))
+            try:
+                counter = int(self.fields["amount_loop"].get("1.0", tk.END))
+            except Exception as e:
+                counter = 0
             for x in range(0, counter):
                 try:
-                    print(type(self.fields["phone_number"].get("1.0", tk.END)))
                     self.create_sms(self.get_cat_facts(), str(self.fields["phone_number"].get("1.0", tk.END)))
                 except Exception as e:
                     print(e)
@@ -67,40 +73,59 @@ class gui_stuff(tk.Frame):
 
     def threaded_sms_random_loop(self):
         if (self.fields["amount_loop"].get("1.0", tk.END) == ""):
-            print(type(self.fields["phone_number"].get("1.0", tk.END)))
             self.create_sms(self.get_cat_facts(), str(self.fields["phone_number"].get("1.0", tk.END)))
-
         else:
-            counter = int(self.fields["amount_loop"].get("1.0", tk.END))
+            try:
+                counter = int(self.fields["amount_loop"].get("1.0", tk.END))
+            except Exception as e:
+                counter = 0
+
             for x in range(0, counter):
                 try:
                     time.sleep(random.randint(0, 5))
-                    print(type(self.fields["phone_number"].get("1.0", tk.END)))
                     self.create_sms(self.get_cat_facts(), str(self.fields["phone_number"].get("1.0", tk.END)))
                 except Exception as e:
                     print(e)
 
+    def reset_fields(self):
+        self.fields["phone_number"].delete("1.0", tk.END)
+        self.fields["amount_loop"].delete("1.0", tk.END)
+
 
     def actions(self, action):
         return_variable = action
-        counter = 1
         if(action == "send"):
-            sms_loop = threading.Thread(name='threaded_sms_loop', target=self.threaded_sms_loop)
-            sms_loop.start()
+            if (self.fields["amount_loop"].get("1.0", tk.END) == '\n'):
+                print("You left the loop amount empty we will assume 1")
+
+            if(self.fields["phone_number"].get("1.0", tk.END) == '\n'):
+                print("You left the phone number empty")
+            else:
+                sms_loop = threading.Thread(name='threaded_sms_loop', target=self.threaded_sms_loop)
+                sms_loop.start()
+                self.master.title("Cat Facts Low Orbiting Ion Cannon - Pew Pew Pew")
 
         if (action == "reset"):
-            print(self.get_cat_facts())
+            clear_fields = threading.Thread(name='threaded_sms_loop', target=self.reset_fields)
+            clear_fields.start()
+
 
         if(action == "new_window"):
             self.create_new_window()
 
         if(action == "random"):
-            sms_loop = threading.Thread(name='threaded_sms_loop', target=self.threaded_sms_random_loop)
-            sms_loop.start()
+            if (self.fields["amount_loop"].get("1.0", tk.END) == '\n'):
+                print("You left the loop amount empty we will assume 1")
+
+            if(self.fields["phone_number"].get("1.0", tk.END) == '\n'):
+                print("You left the phone number empty")
+            else:
+                sms_loop = threading.Thread(name='threaded_sms_loop', target=self.threaded_sms_random_loop)
+                sms_loop.start()
 
     def create_new_window(self):
         newWindow = tk.Toplevel(self.master)
-        newWindow.title("New Cat Facts Window")
+        newWindow.title("New Cat Facts Window Example")
         newWindow.geometry('200x200')
         tk.Label(newWindow, text="This is a new window").pack()
 
@@ -119,12 +144,15 @@ class gui_stuff(tk.Frame):
         )
 
     def get_cat_facts(self):
+        print("Pew....")
         return requests.get(url="https://catfact.ninja/fact").json()["fact"]
 
 root = tk.Tk(className="Cat Facts")
-root.geometry("600x150")
+root.title("Cat Facts Low Orbiting Ion Cannon")
+root.geometry("500x150")
 app = gui_stuff(master=root)
 app.mainloop()
+
 
 
 
