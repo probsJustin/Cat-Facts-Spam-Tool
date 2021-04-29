@@ -1,11 +1,11 @@
 import requests
 import tkinter as tk
 from functools import partial
-import os
 from api import account_sid, auth_token
 import threading
 import random
 import time
+import traceback
 
 class gui_stuff(tk.Frame):
     def __init__(self, master=None):
@@ -69,8 +69,6 @@ class gui_stuff(tk.Frame):
                 except Exception as e:
                     print(e)
 
-
-
     def threaded_sms_random_loop(self):
         if (self.fields["amount_loop"].get("1.0", tk.END) == ""):
             self.create_sms(self.get_cat_facts(), str(self.fields["phone_number"].get("1.0", tk.END)))
@@ -90,7 +88,7 @@ class gui_stuff(tk.Frame):
     def reset_fields(self):
         self.fields["phone_number"].delete("1.0", tk.END)
         self.fields["amount_loop"].delete("1.0", tk.END)
-
+        self.fields["delay"].delete("1.0", tk.END)
 
     def actions(self, action):
         return_variable = action
@@ -108,7 +106,6 @@ class gui_stuff(tk.Frame):
         if (action == "reset"):
             clear_fields = threading.Thread(name='threaded_sms_loop', target=self.reset_fields)
             clear_fields.start()
-
 
         if(action == "new_window"):
             self.create_new_window()
