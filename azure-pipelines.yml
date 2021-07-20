@@ -14,8 +14,6 @@ stages:
  - stage: 
    jobs: 
     - deployment: firstJob
-      pool:
-        name: ubuntu-latest
       environment: 
         name: 'SUPLAB_DEVOPS'
         resourceName: 'suplab-394-builder'
